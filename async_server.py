@@ -17,7 +17,7 @@ xlist = []  # waiting for ERROR events
 while 1:
     (ready_to_read,
      ready_to_write,
-     errors) = select.select(rlist, wlist, xlist, timeout=0.5)
+     errors) = select.select(rlist, wlist, xlist, 0.5)
 
     for sock in ready_to_read:
         if sock is server_sock:
