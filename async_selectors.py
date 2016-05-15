@@ -3,17 +3,6 @@ from selectors import DefaultSelector, EVENT_WRITE, EVENT_READ
 import collections
 
 
-class MyClientSocket:
-
-    def __init__(self, sock):
-        self.sock = sock
-        self.sock.setblocking(0)
-        self.request = None
-
-    def __getattr__(self, attr):
-        return getattr(self.sock, attr)
-
-
 class TCPServer:
 
     def __init__(self, port):
@@ -31,6 +20,7 @@ class TCPServer:
         with server_sock:
             try:
                 client_sock, remote_addr = self.sock.accept()
+                client_sock.setblocking(False)
             except BlockingIOError:
                 pass
             self.selector.register(self.sock, EVENT_READ)
@@ -48,26 +38,9 @@ class TCPServer:
                     if events == EVENT_READ:
                         # Read data from client socket
                         self._read_request(client_sock)
-                        # If not all client data received, select again
-                        if not client_sock.request:
-                            continue
-                        # All client data received, so I can handle this
-                        # request
-                        self._handle_received_request(client_sock)
                     elif events == EVENT_WRITE:
                         # Now I can send response to the client
                         self._write_response(client_sock)
-
-    def _handle_received_request(self, client_sock):
-        '''
-        Build client response and add it to self.responses dict and
-        register client_sock with selector for write events.
-        '''
-        # Response has to be larger than client socket recv buffer size
-        response = (client_sock.request.upper() * 100).encode('utf8')
-        self.responses[client_sock] = response
-        self.selector.unregister(client_sock)
-        self.selector.register(client_sock, EVENT_WRITE)
 
     def _write_response(self, client_sock):
         '''
@@ -104,8 +77,8 @@ class TCPServer:
         return self.sock
 
     def _accept_client(self):
-        sock, remote_addr = self.sock.accept()
-        client_sock = MyClientSocket(sock)
+        client_sock, remote_addr = self.sock.accept()
+        client_sock.setblocking(False)
         print('Client connected from', *remote_addr)
         # Make client socket nonblocking
         self.selector.register(client_sock, EVENT_READ)
@@ -131,7 +104,10 @@ class TCPServer:
                 self.buffers[client_sock].append(chunk)
                 print('Got all data from client', client_name)
                 request = b''.join(self.buffers[client_sock]).decode('utf8')
-                client_sock.request = request
+                response = (request.upper() * 100).encode('utf8')
+                self.responses[client_sock] = response
+                self.selector.unregister(client_sock)
+                self.selector.register(client_sock, EVENT_WRITE)
             else:
                 self.buffers[client_sock].append(chunk)
 
