@@ -97,7 +97,6 @@ class TCPServer:
 
             print('Received chunk from client', client_name)
             if chunk.endswith(b'end'):
-                buffer.append(chunk)
                 print('Got all data from client', client_name)
                 request = b''.join(buffer).decode('utf8')
                 response = (request.upper() * 100).encode('utf8')
