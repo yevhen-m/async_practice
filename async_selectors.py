@@ -1,6 +1,7 @@
-import socket
-from selectors import DefaultSelector, EVENT_WRITE, EVENT_READ
 import collections
+import socket
+
+from selectors import EVENT_READ, EVENT_WRITE, DefaultSelector
 
 
 class TCPServer:
