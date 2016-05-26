@@ -80,9 +80,13 @@ class Runner:
 
     def __init__(self, gen, result_future):
         self.gen = gen
-        self.result_future = result_future  # future returned by async func
-        self.received_future = None  # future received from gen
+        # future returned by the async function
+        self.result_future = result_future
+        # future received from the generator
+        self.received_future = None
         self.ioloop = IOLoop()
+        # And now we start to drive the generator
+        self.run()
 
     def run(self):
         try:

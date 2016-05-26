@@ -10,7 +10,8 @@ class TCPServer:
         self.ioloop = IOLoop()
 
         self.server_sock = socket.socket()
-        self.server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.server_sock.setsockopt(socket.SOL_SOCKET,
+                                    socket.SO_REUSEADDR, 1)
 
     def bind(self, port):
         self.server_sock.bind(('', port))
@@ -35,6 +36,7 @@ class TCPServer:
 def handle_client(client):
     data = yield client.recv()
     yield client.send(data.upper())
+    client.close()
     print('Handled', *client.getpeername())
 
 
