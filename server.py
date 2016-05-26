@@ -2,6 +2,7 @@ import socket
 import selectors
 
 from classes import *  # noqa
+from stream import *  # noqa
 
 
 class TCPServer:
@@ -28,16 +29,18 @@ class TCPServer:
     def accept(self):
         client, addr = self.server_sock.accept()
         print('Connection from', *client.getpeername())
-        client.send(b'hello\n')
-        client.close()
+        handle_client(Stream(client))
 
 
 @coroutine
-def handle_client(client):
-    data = yield client.recv()
-    yield client.send(data.upper())
-    client.close()
-    print('Handled', *client.getpeername())
+def handle_client(client_stream):
+    while True:
+        data = yield client_stream.recv()
+        if not data.strip():
+            break
+        yield client_stream.send(data.upper())
+    print('Handled', *client_stream.getpeername())
+    client_stream.close()
 
 
 if __name__ == "__main__":

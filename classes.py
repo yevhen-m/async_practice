@@ -24,6 +24,21 @@ def singleton(cls):
     return inner
 
 
+class Future:
+
+    def __init__(self):
+        self.result = None
+        self.callbacks = []
+
+    def add_done_callback(self, cb):
+        self.callbacks.append(cb)
+
+    def set_result(self, result):
+        self.result = result
+        for cb in self.callbacks:
+            cb(self)
+
+
 @singleton
 class IOLoop:
 
@@ -76,39 +91,26 @@ class IOLoop:
                 self.handlers[sock]()
 
 
+null_future = Future()
+null_future.set_result(None)
+
+
 class Runner:
 
     def __init__(self, gen, result_future):
         self.gen = gen
         # future returned by the async function
         self.result_future = result_future
-        # future received from the generator
-        self.received_future = None
+        self.future = null_future
         self.ioloop = IOLoop()
         # And now we start to drive the generator
         self.run()
 
     def run(self):
         try:
-            self.received_future = self.gen.send(None)
+            received_future = self.gen.send(self.future.result)
         except StopIteration as e:
             self.result_future.set_result(e.value)
             return
-        self.ioloop.add_future(self.received_future,
-                               lambda f: self.run())
-
-
-class Future:
-
-    def __init__(self):
-        self.result = None
-        self.callback = None
-
-    def add_done_callback(self, cb):
-        self.callback = cb
-
-    def set_result(self, result):
-        self.result = result
-        self.callback(self)
-
-
+        self.future = received_future
+        self.ioloop.add_future(self.future, lambda f: self.run())
