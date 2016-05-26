@@ -2,24 +2,36 @@ import functools
 import selectors
 
 
-class IOLoop:
+def coroutine(fn):
 
-    _current = None
+    def inner(*args, **kwargs):
+        result_future = Future()
+        Runner(fn(*args, **kwargs), result_future)
+        return result_future
+
+    return inner
+
+
+def singleton(cls):
+    instance = None
+
+    def inner():
+        nonlocal instance
+        if instance is None:
+            instance = cls()
+        return instance
+
+    return inner
+
+
+@singleton
+class IOLoop:
 
     def __init__(self):
         self.handlers = {}
         self.callbacks = []
         self.running = False
         self.selector = selectors.DefaultSelector()
-
-    @classmethod
-    def current(cls):
-        '''
-        We have only one IOLoop instance.
-        '''
-        if not cls._current:
-            cls._current = cls()
-        return cls._current
 
     def add_handler(self, sock, event, handler):
         assert event in (selectors.EVENT_READ, selectors.EVENT_WRITE)
@@ -70,7 +82,7 @@ class Runner:
         self.gen = gen
         self.result_future = result_future  # future returned by async func
         self.received_future = None  # future received from gen
-        self.ioloop = IOLoop.current()
+        self.ioloop = IOLoop()
 
     def run(self):
         try:

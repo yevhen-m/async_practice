@@ -7,7 +7,7 @@ from classes import *  # noqa
 class TCPServer:
 
     def __init__(self):
-        self.ioloop = IOLoop.current()
+        self.ioloop = IOLoop()
 
         self.server_sock = socket.socket()
         self.server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -29,6 +29,13 @@ class TCPServer:
         print('Connection from', *client.getpeername())
         client.send(b'hello\n')
         client.close()
+
+
+@coroutine
+def handle_client(client):
+    data = yield client.recv()
+    yield client.send(data.upper())
+    print('Handled', *client.getpeername())
 
 
 if __name__ == "__main__":
