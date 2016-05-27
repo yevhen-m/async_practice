@@ -24,7 +24,7 @@ with server_sock:
             if sock is server_sock:
                 # Accept a new client
                 client_sock, remote_addr = sock.accept()
-                print('Connection from', *client_sock.getpeername())
+                print(*client_sock.getpeername(), 'incoming connection')
                 rlist.add(client_sock)
             else:
                 # This is one of the client sockets
@@ -39,6 +39,6 @@ with server_sock:
         # Some of our clients are ready to receive their responses
         for sock in ready_to_write:
             sock.send(wlist[sock])
-            print('Client handled', *sock.getpeername())
+            print(*sock.getpeername(), 'handled')
             sock.close()
             del wlist[sock]
