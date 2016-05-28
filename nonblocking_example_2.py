@@ -3,16 +3,15 @@ import select
 import time
 
 
-def countdown(n=100000):
+def countdown(n=10**8):
     while n > 0:
         n -= 1
         yield n
-    print('countdown finished')
 
 
-def send_data(data):
+def send_data(data, port=8000):
     sock = socket.socket()
-    sock.connect(('localhost', 8000))
+    sock.connect(('localhost', port))
     sock.setblocking(0)
 
     data = data * 10 * 1024 * 1024
@@ -30,7 +29,10 @@ def send_data(data):
 
 
 if __name__ == "__main__":
-    tasks = [countdown(), send_data(data=b'foobar')]  # these are generators objects
+    tasks = [countdown(),
+             send_data(data=b'foobar', port=8000),
+             send_data(data=b'barfoo', port=8001)]  # these are generators objects
+
     write_waiting = {}  # {sock: task} mapping
 
     start = time.time()

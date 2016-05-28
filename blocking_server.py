@@ -1,9 +1,14 @@
 import socket
+import sys
+
+
+# Port as a second cli argument is optional
+port = int(sys.argv[-1]) if len(sys.argv) > 1 else 8000
 
 
 server_sock = socket.socket()
 server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-server_sock.bind(('', 8000))
+server_sock.bind(('', port))
 server_sock.listen(5)
 
 with server_sock:
