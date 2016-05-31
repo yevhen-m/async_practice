@@ -1,5 +1,0 @@
-A function is BLOCKING if it has to wait for smth to complete.
-CPU and I/O take some time, so every function is blocking
-We can't do anything to 'unblock' CPU bound tasks
-But CPU is idle when we wait for results from the database server
-We need to somehow use CPU to make progress, while we wait for I/O
