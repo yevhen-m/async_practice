@@ -35,6 +35,6 @@ def send_data(data=b'foobar', port=8000):
 if __name__ == "__main__":
     start = time.time()
     send_data(port=8000)
-    send_data(port=8001)
+    # send_data(port=8001)
     for _ in countdown(): pass
     print('%.1f' % (time.time() - start), 'sec')

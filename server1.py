@@ -37,6 +37,7 @@ with server_sock:
                 wlist[sock] = response
 
         # Some of our clients are ready to receive their responses
+        # Write uppercase request message and close the connection
         for sock in ready_to_write:
             sock.send(wlist[sock])
             print(*sock.getpeername(), 'handled')

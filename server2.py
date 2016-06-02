@@ -16,7 +16,6 @@ class TCPServer:
         # self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 10)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(('', port))
-        self.sock.setblocking(False)
         self.sock.listen(10)
 
     def run(self):

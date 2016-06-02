@@ -1,3 +1,8 @@
+'''
+This simple tcp server prints to stdout incoming connections, received
+messages and closed connections. When server receives whitespace string
+it terminates the connection.
+'''
 import socket
 import sys
 

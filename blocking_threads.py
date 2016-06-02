@@ -30,4 +30,5 @@ def handle_client(client):
 with server_sock:
     while True:
         client, addr = server_sock.accept()
+        # Handle client in a separate worker-hread
         executor.submit(handle_client, client)
