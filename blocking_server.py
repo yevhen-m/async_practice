@@ -22,11 +22,6 @@ with server_sock:
         client_name = '%s %s' % client.getpeername()
         print(client_name, 'incoming connection')
 
-        while True:
-            data = client.recv(1024).strip()
-            if not data:
-                break
-            print(client_name, data)
-
-        print(client_name, 'connection closed')
+        for chunk in iter(lambda: client.recv(1024).strip(), b''):
+            print(client_name, chunk)
         client.close()
