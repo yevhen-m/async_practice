@@ -91,26 +91,26 @@ class IOLoop:
                 self.handlers[sock]()
 
 
-null_future = Future()
-null_future.set_result(None)
-
-
 class Runner:
 
     def __init__(self, gen, result_future):
         self.gen = gen
         # future returned by the async function
         self.result_future = result_future
-        self.future = null_future
         self.ioloop = IOLoop()
+        self.next = None
         # And now we start to drive the generator
         self.run()
 
     def run(self):
         try:
-            received_future = self.gen.send(self.future.result)
+            future = self.gen.send(self.next)
         except StopIteration as e:
             self.result_future.set_result(e.value)
             return
-        self.future = received_future
-        self.ioloop.add_future(self.future, lambda f: self.run())
+
+        def callback(f):
+            self.next = f.result
+            self.run()
+
+        self.ioloop.add_future(future, callback)
