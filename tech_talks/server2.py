@@ -1,3 +1,7 @@
+'''
+TCP server, that reads data from a client, accumulates it in a buffer,
+and then responds with buffered data uppercased.
+'''
 import socket
 
 from selectors import EVENT_READ, EVENT_WRITE, DefaultSelector
@@ -54,7 +58,7 @@ class TCPServer:
         # We received empty chunk, so it is all the incoming data
         # from this client
         print(client, 'request received')
-        client.outbuffer = b''.join(client.inbuffer).upper() + b'\n'
+        client.outbuffer = b' '.join(client.inbuffer).upper() + b'\n'
         # Now we unregister this socket for READ events and register it
         # for WRITE events
         self.selector.unregister(client)

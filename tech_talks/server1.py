@@ -1,3 +1,7 @@
+'''
+Accept incoming connections, ready request string from the client and
+respond with this string uppercased.
+'''
 import socket
 import select
 

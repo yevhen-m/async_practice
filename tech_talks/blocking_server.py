@@ -25,3 +25,4 @@ with server_sock:
         for chunk in iter(lambda: client.recv(1024).strip(), b''):
             print(client_name, chunk)
         client.close()
+        print(client_name, 'connecton closed')
