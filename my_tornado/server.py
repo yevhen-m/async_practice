@@ -28,8 +28,9 @@ class TCPServer:
 
     def accept(self):
         client, addr = self.server_sock.accept()
-        print('Connection from', *client.getpeername())
-        handle_client(Stream(client))
+        stream = Stream(client)
+        print(stream, 'incoming connection')
+        handle_client(stream)
 
 
 @coroutine
@@ -39,7 +40,7 @@ def handle_client(client_stream):
         if not data.strip():
             break
         yield client_stream.send(data.upper())
-    print('Handled', *client_stream.getpeername())
+    print(client_stream, 'connection closed')
     client_stream.close()
 
 

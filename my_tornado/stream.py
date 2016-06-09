@@ -10,6 +10,9 @@ class Stream:
     def __getattr__(self, attrname):
         return getattr(self.sock, attrname)
 
+    def __repr__(self):
+        return '%s %s' % self.sock.getpeername()
+
     def recv(self):
         future = Future()
 

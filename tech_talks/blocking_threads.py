@@ -12,7 +12,7 @@ server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_sock.bind(('', port))
 server_sock.listen(5)
 
-executor = ThreadPoolExecutor(3)
+executor = ThreadPoolExecutor(2)
 
 
 def handle_client(client):
@@ -23,6 +23,7 @@ def handle_client(client):
         if not data:
             break
         print(client_name, data)
+        client.send(str(eval(data.strip().decode('utf8'))).encode('utf8') + b'\n')
     print(client_name, 'connection closed')
     client.close()
 
@@ -31,4 +32,5 @@ with server_sock:
     while True:
         client, addr = server_sock.accept()
         # Handle client in a separate worker-hread
+        print('Submitted a new client')
         executor.submit(handle_client, client)

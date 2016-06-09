@@ -10,7 +10,7 @@ import select
 server_sock = socket.socket()
 server_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 server_sock.bind(('', 8000))
-server_sock.listen(10)
+server_sock.listen(5)
 
 
 rlist = {server_sock}  # waiting for READ events
@@ -22,7 +22,8 @@ with server_sock:
     while True:
         (ready_to_read,
          ready_to_write,
-         errors) = select.select(rlist, wlist, xlist, 0.5)
+         errors) = select.select(rlist, wlist, xlist)
+        print('After select call')
 
         for sock in ready_to_read:
             if sock is server_sock:

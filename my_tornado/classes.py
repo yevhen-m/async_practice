@@ -13,13 +13,12 @@ def coroutine(fn):
 
 
 def singleton(cls):
-    instance = None
+    instance = []
 
     def inner():
-        nonlocal instance
-        if instance is None:
-            instance = cls()
-        return instance
+        if not instance:
+            instance.append(cls())
+        return instance[0]
 
     return inner
 
