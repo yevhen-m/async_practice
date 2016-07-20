@@ -7,10 +7,14 @@ PEP 0492 Coroutines with async and await syntax
     * it's a `SyntaxError` to have yield or yield from in an async function
     * async functions return a coroutine object (like generator functions return generator objects)
     * `await` is used to obtain result from a coroutine
-    * `await` uses `yield from` but it also validates its argument
+    * `await` uses `yield from` but it also validates its argument (it must be an awaitable object)
     - native coroutine object
     - coroutine decorated generator-based object
     - object with __await__ method returning an iterator
+
+* `async for` -- `__aiter__` and `__anext__`
+* `async with` -- `__aenter__` and `__aexit__`
+    * we can do async io in this methods
 
 * Any `yield from` chain of calls ends with a yield, every await is suspended by a yield somewhere
   down the chain of await calls.
@@ -26,6 +30,8 @@ PEP 0492 Coroutines with async and await syntax
 ...     raise StopIteration
 ...
 >>> r = raiser()
+>>> # we can drive a coroutine calling its send method with None
+>>> # (or throw and exception into it)
 >>> r.send(None)
 RuntimeError: coroutine raised StopIteration
 
