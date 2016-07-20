@@ -62,27 +62,28 @@ class SleepingLoop:
                 pass
 
 
+# This coroutine is an awaitable objects bc it's decorated with coroutine
 @types.coroutine
 def sleep(seconds):
     """Pause a coroutine for the specified number of seconds."""
     now = datetime.datetime.now()
     wait_until = now + datetime.timedelta(seconds=seconds)
     # wait_until is a datetime object
-    # actual gets now datetime object from the loop
-    actual = yield wait_until
-    return actual - now
+
+    # There is yield somewhere down the chain
+    yield wait_until
 
 
 async def countdown(label, counter, *, delay=0):
     """Countdown a launch for `counter` seconds, waiting `delay` seconds.
     """
     print(label, 'waiting', delay, 'seconds before starting countdown')
-    delta = await sleep(delay)
-    print(label, 'starting after waiting')
+    await sleep(delay)
+    print(label, 'starting')
 
     while counter:
         print(label, counter)
-        waited = await sleep(1)
+        await sleep(1)
         counter -= 1
 
     print(label, 'finished')
