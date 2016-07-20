@@ -39,15 +39,21 @@ def handle_client(client_stream):
         data = yield client_stream.recv()
         if not data.strip():
             break
+        yield sleep(5)
         yield client_stream.send(data.upper())
     print(client_stream, 'connection closed')
     client_stream.close()
 
 
 if __name__ == "__main__":
-    PORT = 8000
+    import sys
+
+    try:
+        script_name, port = sys.argv
+    except ValueError:
+        port = 8000
 
     server = TCPServer()
-    server.bind(PORT)
+    server.bind(port)
     server.listen()
     server.start()

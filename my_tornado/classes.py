@@ -1,5 +1,19 @@
+import heapq
+import time
 import functools
 import selectors
+import collections
+
+
+Timeout = collections.namedtuple('Timeout', 'time callback')
+
+
+def sleep(seconds):
+    future = Future()
+    loop = IOLoop()
+    time_ = loop.time() + seconds
+    loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
+    return future
 
 
 def coroutine(fn):
@@ -44,8 +58,15 @@ class IOLoop:
     def __init__(self):
         self.handlers = {}
         self.callbacks = []
+        self.timeouts = []
         self.running = False
         self.selector = selectors.DefaultSelector()
+
+    def time(self):
+        return time.time()
+
+    def add_timeout(self, timeout):
+        heapq.heappush(self.timeouts, timeout)
 
     def add_handler(self, sock, event, handler):
         assert event in (selectors.EVENT_READ, selectors.EVENT_WRITE)
@@ -61,8 +82,8 @@ class IOLoop:
         self.running = False
 
     def add_future(self, future, callback):
-        future.add_done_callback(lambda f: self.add_callback(callback,
-                                                             future))
+        future.add_done_callback(lambda f:
+                                 self.add_callback(callback, future))
 
     def add_callback(self, callback, *args, **kwargs):
         self.callbacks.append(functools.partial(callback, *args, **kwargs))
@@ -70,24 +91,31 @@ class IOLoop:
     def start(self):
         self.running = True
         while True:
-            # new callbacks will be executed on the next iteration
-            callbacks = self.callbacks
-            self.callbacks = []
-            for cb in callbacks:
-                cb()
-
-            poll_timeout = 0.0 if self.callbacks else None
-
             # We can exit loop if `stop()` method was called during
             # during callback execution
             if not self.running:
                 break
 
-            events = self.selector.select(poll_timeout)
+            now = self.time()
+            while self.timeouts:
+                timeout = heapq.heappop(self.timeouts)
+                if now < timeout.time:
+                    heapq.heappush(self.timeouts, timeout)
+                    break
+                self.callbacks.append(timeout.callback)
+
+            # Can't figure out how to get poll_timeout neatly
+            events = self.selector.select(0.0)
             for key, mask in events:
                 sock = key.fileobj
                 # Call the handler for this socket
-                self.handlers[sock]()
+                self.callbacks.append(self.handlers[sock])
+
+            # new callbacks will be executed on the next iteration
+            callbacks = self.callbacks
+            self.callbacks = []
+            for cb in callbacks:
+                cb()
 
 
 class Runner:
