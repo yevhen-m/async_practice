@@ -1,41 +1,29 @@
-import types
+import socket
+import play
 
+loop = play.Loop()
 
-# I have two coroutines, that are used for communication with the loop.
-# These are used to wait for the socket to become readable or
-# writeable.
-@types.coroutine
-def read_wait(sock):
-    yield 'read_wait', sock
+async def echo_server(address):
+    sock = socket.socket()
+    sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock.setblocking(False)
+    sock.bind(address)
+    sock.listen(5)
+    while True:
+        client, addr = await loop.sock_accept(sock)
+        print('Connection from', addr)
+        loop.create_task(echo_handler(client))
 
-# I need this decorator to be able to use await keyword with these
-# coroutines
-@types.coroutine
-def write_wait(sock):
-    yield 'write_wait', sock
+async def echo_handler(client):
+    with client:
+        while True:
+            data = await loop.sock_recv(client, 1024)
+            if not data:
+                # Client closed the connection, we received ''
+                break
+            await loop.sock_sendall(client, b'Got: ' + data)
+    print('Connection closed')
 
-# class Loop:
-#   ready -- a queue of ready to run coroutines
-
-#   My Loop has async methods:
-#   sock_accept(sock)
-#       wait for the socket to become readable
-#       accept a new client and create a new task for her
-#   sock_recv(sock, maxbytes)
-#       wait for the sock to become readable
-#       read data from the socket and return it
-#   sock_sendall(client, data)
-#       while we have some data to send
-#       wait for the socket to become writeable
-#       send bytes to the socket
-#       modify data according to the number of bytes sent
-#   create_task(coro)
-#       append given coroutine to the queue of ready to run coroutines
-#   run_forever()
-#       while we have some coroutines to run
-#       get a coroutine
-#       and drive it to the next yield
-#   read_wait(sock)
-#       register this socket for read_event in the selector
-#   write_wait(sock)
-#       register this socket for write_event in the selector
+if __name__ == "__main__":
+    loop.create_task(echo_server(('', 8000)))
+    loop.run_forever()
