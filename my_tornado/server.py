@@ -40,7 +40,9 @@ def handle_client(client_stream):
         data = yield client_stream.recv()
         if not data.strip():
             break
+        print(client_stream, 'sleeping')
         yield sleep(5)
+        print(client_stream, 'resuming')
         yield client_stream.send(data.upper())
     print(client_stream, 'connection closed')
     client_stream.close()

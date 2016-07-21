@@ -65,7 +65,7 @@ class IOLoop:
                 if now < timeout.time:
                     heapq.heappush(self.timeouts, timeout)
                     break
-                self.callbacks.append(timeout.callback)
+                self.add_callback(timeout.callback)
 
             # Can't figure out how to get poll_timeout neatly
             events = self.selector.select(0.0)
