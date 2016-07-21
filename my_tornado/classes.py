@@ -8,14 +8,6 @@ import collections
 Timeout = collections.namedtuple('Timeout', 'time callback')
 
 
-def sleep(seconds):
-    future = Future()
-    loop = IOLoop()
-    time_ = loop.time() + seconds
-    loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
-    return future
-
-
 def coroutine(fn):
 
     def inner(*args, **kwargs):
@@ -24,6 +16,15 @@ def coroutine(fn):
         return result_future
 
     return inner
+
+
+@coroutine
+def sleep(seconds):
+    future = Future()
+    loop = IOLoop()
+    time_ = loop.time() + seconds
+    loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
+    yield future
 
 
 def singleton(cls):
