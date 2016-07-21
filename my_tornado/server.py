@@ -10,12 +10,14 @@ class TCPServer:
 
     def __init__(self):
         self.ioloop = IOLoop()
+        self.port = None
 
         self.server_sock = socket.socket()
         self.server_sock.setsockopt(socket.SOL_SOCKET,
                                     socket.SO_REUSEADDR, 1)
 
     def bind(self, port):
+        self.port = port
         self.server_sock.bind(('', port))
 
     def listen(self, backlog=10):
@@ -25,6 +27,7 @@ class TCPServer:
         self.ioloop.add_handler(self.server_sock,
                                 selectors.EVENT_READ,
                                 self.accept)
+        print('Server running on port', self.port)
         self.ioloop.start()
 
     def accept(self):
