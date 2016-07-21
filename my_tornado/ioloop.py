@@ -1,7 +1,7 @@
-import heapq
-import time
 import functools
+import heapq
 import selectors
+import time
 
 
 def singleton(cls):
