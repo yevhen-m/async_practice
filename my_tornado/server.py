@@ -44,7 +44,7 @@ def handle_client(client_stream):
         if not data.strip():
             break
         print(client_stream, 'sleeping')
-        yield sleep(5)
+        yield from sleep(5)
         print(client_stream, 'resuming')
         yield client_stream.send(data.upper())
     print(client_stream, 'connection closed')

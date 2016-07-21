@@ -16,6 +16,12 @@ class Future:
         for cb in self.callbacks:
             cb(self)
 
+    def __iter__(self):
+        yield self
+        return self.result
+
+    __await__ = __iter__
+
 
 def coroutine(fn):
 
@@ -36,7 +42,15 @@ def sleep(seconds):
     loop = IOLoop()
     time_ = loop.time() + seconds
     loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
-    yield future
+    yield from future
+
+
+async def sleep_await(seconds):
+    future = Future()
+    loop = IOLoop()
+    time_ = loop.time() + seconds
+    loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
+    await future
 
 
 class Runner:
