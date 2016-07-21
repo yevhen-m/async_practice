@@ -10,7 +10,7 @@ PEP 0492 Coroutines with async and await syntax
     * `await` uses `yield from` but it also validates its argument (it must be an awaitable object)
     - native coroutine object
     - coroutine decorated generator-based object
-    - object with __await__ method returning an iterator
+    - object with `__await__` method returning an iterator
 
 * `async for` -- `__aiter__` and `__anext__`
 * `async with` -- `__aenter__` and `__aexit__`

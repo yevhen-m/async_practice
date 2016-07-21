@@ -2,29 +2,6 @@ import heapq
 import time
 import functools
 import selectors
-import collections
-
-
-Timeout = collections.namedtuple('Timeout', 'time callback')
-
-
-def coroutine(fn):
-
-    def inner(*args, **kwargs):
-        result_future = Future()
-        Runner(fn(*args, **kwargs), result_future)
-        return result_future
-
-    return inner
-
-
-@coroutine
-def sleep(seconds):
-    future = Future()
-    loop = IOLoop()
-    time_ = loop.time() + seconds
-    loop.add_timeout(Timeout(time_, lambda: future.set_result(None)))
-    yield future
 
 
 def singleton(cls):
@@ -36,21 +13,6 @@ def singleton(cls):
         return instance[0]
 
     return inner
-
-
-class Future:
-
-    def __init__(self):
-        self.result = None
-        self.callbacks = []
-
-    def add_done_callback(self, cb):
-        self.callbacks.append(cb)
-
-    def set_result(self, result):
-        self.result = result
-        for cb in self.callbacks:
-            cb(self)
 
 
 @singleton
@@ -117,28 +79,3 @@ class IOLoop:
             self.callbacks = []
             for cb in callbacks:
                 cb()
-
-
-class Runner:
-
-    def __init__(self, gen, result_future):
-        self.gen = gen
-        # future returned by the async function
-        self.result_future = result_future
-        self.ioloop = IOLoop()
-        self.next = None
-        # And now we start to drive the generator
-        self.run()
-
-    def run(self):
-        try:
-            future = self.gen.send(self.next)
-        except StopIteration as e:
-            self.result_future.set_result(e.value)
-            return
-
-        def callback(f):
-            self.next = f.result
-            self.run()
-
-        self.ioloop.add_future(future, callback)

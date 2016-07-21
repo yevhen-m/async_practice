@@ -1,8 +1,9 @@
 import socket
 import selectors
 
-from classes import *  # noqa
-from stream import *  # noqa
+from ioloop import IOLoop
+from stream import Stream
+from gen import coroutine, sleep
 
 
 class TCPServer:

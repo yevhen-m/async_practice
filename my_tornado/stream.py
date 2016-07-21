@@ -1,4 +1,7 @@
-from classes import *  # noqa
+import selectors
+
+from ioloop import IOLoop
+from gen import Future
 
 
 class Stream:
