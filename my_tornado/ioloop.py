@@ -59,22 +59,37 @@ class IOLoop:
             if not self.running:
                 break
 
-            now = self.time()
-            while self.timeouts:
-                timeout = heapq.heappop(self.timeouts)
-                if now < timeout.time:
-                    heapq.heappush(self.timeouts, timeout)
-                    break
-                self.add_callback(timeout.callback)
+            timeout = None
 
-            # Can't figure out how to get poll_timeout neatly
-            events = self.selector.select(0.0)
+            # Calculate poll timeout
+
+            if self.callbacks:
+                timeout = 0
+            elif self.timeouts:
+                when = self.timeouts[0].time
+                deadline = max(0, when - self.time())
+                if timeout is None:
+                    timeout = deadline
+                else:
+                    timeout = min(timeout, deadline)
+
+            # Poll
+
+            events = self.selector.select(timeout)
             for key, mask in events:
                 sock = key.fileobj
-                # Call the handler for this socket
                 self.callbacks.append(self.handlers[sock])
 
-            # new callbacks will be executed on the next iteration
+            now = self.time()
+            while self.timeouts:
+                timeout = self.timeouts[0]
+                if now < timeout.time:
+                    break
+                timeout = heapq.heappop(self.timeouts)
+                self.add_callback(timeout.callback)
+
+            # Run callbacks
+
             callbacks = self.callbacks
             self.callbacks = []
             for cb in callbacks:
